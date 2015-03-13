@@ -1,0 +1,66 @@
+ <openerp>
+    <data>
+         <record id="view_order_withcarrier_form" model="ir.ui.view">
+            <field name="name">delivery.sale.order_withcarrier.form.view</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//page[@string='Other Information']" position="inside" >
+					<group colspan="4" col="4">
+<!--						<field name="logis_company" on_change="onchange_logis_company(logis_company)"/>-->
+						<field name="ship_company_code" invisible="1"/>
+					</group>
+				</xpath>
+            
+                <xpath expr="//form/sheet/notebook/page/group[@name='sale_total']" position="replace">
+					 <group class="oe_subtotal_footer oe_right" colspan="2" name="sale_total">
+						    <field name="ship_service"/>
+							<field name="amount_untaxed" sum="Net Total" string="Net Total"/>
+							<field name="shipcharge" help="The shipping charge on this order." attrs="{'readonly':[('state','not in',('draft','sent','progress'))]}"/>
+							<field name="amount_tax"/>
+							 <div class="oe_subtotal_footer_separator oe_inline">
+                                    <label for="amount_total" />
+                                    <button name="button_dummy"
+                                        states="draft,sent" string="(update)" type="object" class="oe_edit_only oe_link"/>
+                                </div>
+                                <field name="amount_total" nolabel="1" class="oe_subtotal_footer_separator" widget='monetary' options="{'currency_field': 'currency_id'}"/>
+							<button name="%(sale.action_view_sale_advance_payment_inv)d" string="Advance Invoice"
+								type="action" icon="gtk-execute" states="draft,manual" />
+					 </group>
+					 <group col="6" colspan="2" name="delivery_method">
+	  			 		 <field name="delivery_method" domain="[('active','=',True)]" on_change="onchange_delivery_method(delivery_method)"/> 
+                         <field name="carrier_id" context="{'sale_order_id':active_id or False ,'delivery_method':delivery_method}" 
+                         		attrs="{'invisible':[('ship_company_code','!=','grid')]}"
+	                     		class="oe_inline" on_change="onchange_carrier_id(carrier_id)"/>
+	                     <field name="transport_id" context="{'search_transport_company': True}" 
+	                     		readonly='1'/>			
+	                     <field name="sale_account_id" />
+	                     <button name="delivery_set" string="Add to Quote" type="object" 
+		                         class="oe_edit_only" 
+		                         attrs="{'invisible':['|','|',('carrier_id','=',False),('ship_company_code','!=','grid'),('state','not in',('draft','sent','progress'))]}"/>
+		                     
+	                     <label colspan="4" string="Click 'Add to Quote' to add line for estimated delivery price, If Estimated not added here amount will be computed when invoicing based on delivery order(s)."
+	                         class="oe_edit_only"
+	                         attrs="{'invisible':['|','|',('carrier_id','=',False),('state','not in',('draft','sent')),('ship_company_code','!=','grid')]}"/>
+                      </group>
+				</xpath>
+				
+				<!--   From partner address validation  -->
+				
+                <xpath expr="//field[@name='project_id']" position="after">
+				   <field name="hide_validate" invisible="1"/>
+			       <group colspan="2" col="3">
+					   <label string="Address Validation Method : " align="1.0" />
+					   <field name="address_validation_method" nolabel="1" />
+					   <button name="%(so_addr_validate_act_window)d" type="action"
+								string="Validate _Address"
+								groups="base.group_sale_salesman,base.group_erp_manager,base.group_sale_manager,base.group_system"  
+								context="{'default_sale_id': active_id}"
+								attrs="{'invisible':[('address_validation_method','in',['none', False])]}"/>
+			      </group>
+		       </xpath>
+		       
+            </field>
+         </record>
+     </data>
+ </openerp>

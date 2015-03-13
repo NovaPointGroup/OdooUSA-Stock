@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+	<data>
+
+		<!-- sale_id used as function type field,you need to change.
+		  <record id="stock_form_inherit_from_sale" model="ir.ui.view">
+            <field name="name">stock_form_inherit_from_sale</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock.view_picking_form"/>
+            <field name="arch" type="xml">
+                <field name="move_type" position="before">
+                    <field name="sale_id" on_change="on_change_sale_id(sale_id,state)" />
+                </field>
+            </field>
+          </record>-->
+		
+		<record id="view_picking_shipping_sale_inherit_again" model="ir.ui.view">
+			<field name="name">shipping_api_stock_form_inherit</field>
+			<field name="model">stock.picking</field>
+			<field name="inherit_id" ref="shipping_api.view_picking_shipping_inherit"/>
+			<field name="arch" type="xml">
+
+				<xpath expr="//field[@name='shipcharge']" position="after">
+				    <field name="is_intnl" invisible="1"/>
+				    <field name='shipper' on_change="onchange_ups_shipper_id(shipper)"/>
+				    <field name="ups_pickup_type"/>
+				    <field name="ups_packaging_type" widget="selection"/>
+					<field name='ups_service' string="Shipping Service" domain="['|',('common','=',True),('is_intnl','=',is_intnl)]"/>
+					<field name='label_format_id' string="Label Format Code"/>
+					<button name="get_rate" string="Get Rate" type="object" icon="gtk-execute"  />
+					<field name="status_message" colspan="4" attrs="{'invisible': [('status_message','=', False)]}" />
+					<group colspan="4" col="4" attrs="{'invisible':[('ship_company_code','!=','ups')]}">
+						<field name="bill_shipping" on_change="onchange_bill_shipping(bill_shipping, ups_use_cc, ups_cc_address_id, ups_bill_receiver_address_id, partner_id, shipper)"/>
+						<field name="ups_use_cc" attrs="{'readonly' : [('bill_shipping','!=', 'shipper')]}" on_change="onchange_bill_shipping(bill_shipping, ups_use_cc, ups_cc_address_id, ups_bill_receiver_address_id, partner_id, shipper)"/>
+					</group>
+				</xpath>
+
+				<xpath expr="//page[@string='BlanketPeriod']" position="after">
+					<page string="Credit Card Information" attrs="{'invisible':['|',('bill_shipping','!=', 'shipper'),('ups_use_cc','!=',True)]}" >
+					    <group>
+							<field name="ups_cc_type" attrs="{'required' : [('ups_use_cc','=',True)]}"/>
+							<field name="ups_cc_number" attrs="{'required' : [('ups_use_cc','=',True)]}"/>
+							<field name="ups_cc_expiaration_date" attrs="{'required' : [('ups_use_cc','=',True)]}"/>
+							<field name="ups_cc_security_code" attrs="{'required' : [('ups_use_cc','=',True)]}" password="1"/>
+							<field name="ups_cc_address_id" attrs="{'required' : [('ups_use_cc','=',True)]}"/>
+						</group>
+					</page>
+					<page string="Third Party Details" attrs="{'invisible':[('bill_shipping','!=', 'thirdparty')]}" >
+							<field name="ups_third_party_type" attrs="{'required' : [('bill_shipping','=','thirdparty')]}" />
+							<newline/>
+							<field name="ups_third_party_account" attrs="{'required' : [('bill_shipping','=','thirdparty')]}"/>
+							<field name="ups_third_party_address_id" attrs="{'required' : [('bill_shipping','=','thirdparty')]}"/>
+					</page>
+					<page string="Receiver Details" attrs="{'invisible':[('bill_shipping','!=', 'receiver')]}" >
+							<field name="ups_bill_receiver_account" attrs="{'required' : [('bill_shipping','=','receiver')]}"/>
+							<field name="ups_bill_receiver_address_id" attrs="{'required' : [('bill_shipping','=','receiver')]}"/>
+					</page>
+				</xpath>
+			</field>
+		</record>
+	</data>
+</openerp>

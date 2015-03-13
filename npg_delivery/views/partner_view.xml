@@ -1,0 +1,31 @@
+<openerp>
+    <data>
+
+        <record id="view_partner_property_form" model="ir.ui.view">
+            <field name="name">res.partner.carrier.property.form.inherit</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="stock.view_partner_property_form" />
+            <field name="arch" type="xml">
+                <field name="property_stock_supplier" position="after">
+                    <field name="property_delivery_carrier"/>
+                </field>
+                <!-- From Partner Address Validation -->
+                <xpath expr="//field[@name='website']" position="after">
+					<field name="last_address_validation" />
+					<field name="classification"/>
+					<newline/>
+					<group colspan="2" col="3">
+						<field name="address_validation_method" />
+						<button name='%(part_addr_validate_act_window)d' type='action' string='Validate Address' 
+								groups="base.group_sale_salesman,base.group_erp_manager,base.group_sale_manager,base.group_system"
+								context="{'default_address_id': active_id}"
+								attrs="{'invisible':[('address_validation_method','in',['none', False])]}"
+								/>
+					</group>
+					<newline/>
+				</xpath>
+            </field>
+        </record>
+
+    </data>
+</openerp>

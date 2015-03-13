@@ -1,0 +1,35 @@
+<openerp>
+	<data>
+	   <record id="view_purchase_order_withcarrier_form" model="ir.ui.view">
+            <field name="name">delivery.purchase.order_withcarrier.form.view</field>
+            <field name="model">purchase.order</field>
+            <field name="inherit_id" ref="purchase.purchase_order_form"/>
+            <field name="arch" type="xml">
+				<xpath expr="//form[@string='Purchase Order']/sheet/notebook" position="before">
+				<group >
+					<group >
+	  			 		 <field name="delivery_method" domain="[('active','=',True)]"/> 
+						 <field name="transport_id" context="{'search_transport_company': True}" />
+	                     <field name="carrier_id" context="{'purchase_order_id':active_id or False}" 
+	                     			domain="[('partner_id','=',transport_id)]" class="oe_inline"/>
+	                     
+                     </group>
+                     <group>
+	                     <button name="delivery_set" string="Add to Quote" type="object"
+		                         class="oe_edit_only"
+		                         attrs="{'invisible':['|',('carrier_id','=',False),('state','not in',('draft','sent'))]}"/>
+		                     
+	                     <label string="Click 'Add to Quote' to add line for estimated delivery price, If Estimated not added here amount will be computed when invoicing based on delivery order(s)."
+	                         class="oe_edit_only"
+	                         attrs="{'invisible':['|',('carrier_id','=',False),('state','not in',('draft','sent'))]}"/>
+                     </group>
+                </group>
+                </xpath>
+                <field name="location_id" position="after">
+            	         <field name="warehouse_id"  widget="selection" groups="stock.group_locations"/>
+				     </field>
+            </field>
+        </record>
+	
+	</data>
+</openerp>

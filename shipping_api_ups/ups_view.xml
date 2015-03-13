@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+	<data>
+	
+	    <!--  UPS DELIVERY Method -->
+	    
+	    <record id="delivery_method_form_inherit_02" model="ir.ui.view">
+			<field name="name">delivery.method.inherit</field>
+			<field name="model">delivery.method</field>
+			<field name="inherit_id" ref="npg_delivery.view_delivery_method_form"/>
+			<field name="arch" type="xml">
+			    <xpath expr="//group" position="after">
+				      <group col="4" attrs="{'invisible':[('ship_company_code','!=','ups')]}">
+<!--						<field name="ship_company_code" colspan='2' /> -->
+						<field name="company_id" colspan='2'/>
+						<field name="url" widget="url"/>
+						<field name="test_mode" colspan='2'/>
+<!--	                    <field name="ship_account_id"/>-->
+					  </group>
+					 <notebook>
+						<page string="UPS Account"  attrs="{'invisible':[('ship_company_code','!=','ups')]}">
+						    <group>
+							<field name="ups_shipping_account_ids" nolabel='1' colspan="4"/>
+							</group>
+						</page>
+						<page string="UPS URLs" attrs="{'invisible':[('ship_company_code','!=','ups')]}">
+							<group>	
+							<field name='ship_req_web'/>
+							<field name='ship_req_port'/>
+							<field name='ship_req_test_web'/>
+							<field name='ship_req_test_port'/>
+							<field name='ship_accpt_web'/>
+							<field name='ship_accpt_port'/>
+							<field name='ship_accpt_test_web'/>
+							<field name='ship_accpt_test_port'/>
+							<field name='ship_void_web'/>
+							<field name='ship_void_port'/>
+							<field name='ship_void_test_web'/>
+							<field name='ship_void_test_port'/>
+							<field name='ship_rate_web'/>
+							<field name='ship_rate_port'/>
+							<field name='ship_rate_test_web'/>
+							<field name='ship_rate_test_port'/>
+							<field name='ship_tracking_url'/>
+							</group>
+						</page>
+					</notebook>
+				 </xpath>
+			</field>
+		</record>
+
+		<!-- ups shipping service type -->
+		<record id="form_view_for_ups_account_shipping_service" model="ir.ui.view">
+			<field name="name">form_view_for_ups_account_shipping_service</field>
+			<field name="res_model">ups.shipping.service.type</field>
+			<field name="model">ups.shipping.service.type</field>
+			<field name="arch" type="xml">
+				<form string="Shipping Account Service" >
+					<sheet>
+						<group>
+							<field name="description"/>
+							<field name="category"/>
+							<field name="shipping_service_code"/>
+							<field name="rating_service_code"/>
+							<field name="is_intnl"/>
+							<field name="common"/>
+						</group>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+		<record id="tree_view_for_ups_account_shipping_service" model="ir.ui.view">
+			<field name="name">tree_view_for_ups_account_shipping_service</field>
+			<field name="res_model">ups.shipping.service.type</field>
+			<field name="model">ups.shipping.service.type</field>
+			<field name="arch" type="xml">
+				<tree string="Shipping Account Service">
+					<field name="description"/>
+					<field name="category"/>
+					<field name="shipping_service_code"/>
+					<field name="rating_service_code"/>
+				</tree>
+			</field>
+		</record>
+
+		<record id="action_for_ups_account_shipping_service" model="ir.actions.act_window">
+			<field name="name">Shipping Service</field>
+			<field name="res_model">ups.shipping.service.type</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">tree,form</field>
+		</record>
+
+		<menuitem id="ups_shipping_service_type_in_config" name="Shipping" parent="stock.menu_stock_configuration" />
+		<menuitem id="ups_shipping_service_type" name="Shipping Service"
+			parent="shipping_api.shipping_menu" action="action_for_ups_account_shipping_service" />
+
+
+		<!-- UPS shipping-->
+		<record id="form_view_for_ups_account_shipping" model="ir.ui.view">
+			<field name="name">form_view_for_ups_account_shipping</field>
+			<field name="res_model">ups.account.shipping</field>
+			<field name="model">ups.account.shipping</field>
+			<field name="arch" type="xml">
+				<form string="Shipping Account" >
+					<sheet>
+						
+							<h1>
+								<field name="name" select="1" placeholder="Name" colspan="2"/>
+							</h1>
+							
+							<group colspan='4' col='4'>
+							
+								<field name="ups_account_id" on_change="onchange_ups_account(ups_account_id)"/>
+								<field name="partner_id" />
+								<field name="accesslicensenumber" invisible="1"/>
+								<field name="userid" readonly="1"/>
+								<field name="acc_no" readonly="1"/>
+								<field name="password" password="True" readonly="1"/>
+							</group>
+							<newline/>	
+							<group colspan='4' col='4'>
+								<field name="company_id" colspan="2"/>
+								<field name="atten_name" select="1"/>
+								<field name="address" colspan="2"/>
+								<field name="tax_id_no"/>
+								<field name="active" select="1"/>
+							</group>
+							<group>
+							<field name="ups_shipping_service_ids" colspan="4"/>
+							
+							</group>
+						<newline/>
+						<separator string="Trade Mark" colspan="8"/>
+						<newline/>
+						<field name='trademark' colspan="8" nolabel="1"/>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+		<record id="tree_view_for_ups_account_shipping" model="ir.ui.view">
+			<field name="name">tree_view_for_ups_account_shipping</field>
+			<field name="res_model">ups.account.shipping</field>
+			<field name="model">ups.account.shipping</field>
+			<field name="arch" type="xml">
+				<tree string="Shipping Account">
+					<field name="name" select="1"/>
+					<field name="accesslicensenumber"/>
+					<field name="userid"/>
+					<field name="acc_no"/>
+				</tree>
+			</field>
+		</record>
+
+		<record id="action_for_ups_account_shipping" model="ir.actions.act_window">
+			<field name="name">Account Shipping</field>
+			<field name="res_model">ups.account.shipping</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">tree,form</field>
+		</record>
+
+		<menuitem id="shipping_api.ups_quick_shipping" parent="shipping_api.shipping_menu" sequence="20" name="UPS Quick Ship" action="action_quick_ship"/>
+		<menuitem id="summary_report" parent="shipping_api.shipping_menu" sequence="20" name="Summary Report" action="print_report_act_window"/>
+		
+		<!-- UPS Account -->
+		<record id="form_view_for_ups_account" model="ir.ui.view">
+			<field name="name">form.view.for.ups</field>
+			<field name="model">ups.account</field>
+			<field name="arch" type="xml">
+				<form string="ups">
+				  <group col="4">
+					<field name="accesslicensenumber"/>
+					<field name="acc_no"/>
+					<field name="userid"/>
+					<field name="password" password="True"/>
+					<field name="url"/>
+					<field name="max_lim_size"/>
+					<field name="ups_active"/>
+				  </group>
+				</form>
+			</field>
+		</record>
+	
+		<record id="tree_view_for_ups_account" model="ir.ui.view">
+			<field name="name">tree.view.for.ups</field>
+			<field name="model">ups.account</field>
+			<field name="arch" type="xml">
+				<tree string="ups">
+					<field name="accesslicensenumber"/>
+					<field name="userid"/>
+					<field name="ups_active"/>
+					<field name="acc_no"/>
+					<field name="url"/>
+					<field name="max_lim_size"/>
+				</tree>
+			</field>
+		</record>
+	
+		<record id="action_for_ups_account_menu" model="ir.actions.act_window">
+			<field name="name">UPS Account</field>
+			<field name="res_model">ups.account</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">tree,form</field>
+			<field name="view_id" ref="tree_view_for_ups_account"/>
+		</record>
+	
+		<menuitem id="ups_account_menu"
+					name="UPS Account"
+				 	parent="shipping_api.shipping_menu"
+					action="action_for_ups_account_menu" />
+
+	</data>
+</openerp>
+

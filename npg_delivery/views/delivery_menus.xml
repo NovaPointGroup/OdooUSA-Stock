@@ -1,0 +1,17 @@
+ <openerp>
+    <data>
+ 
+		<menuitem id="menu_delivery" name="Delivery" 
+		        parent="stock.menu_stock_root" groups="base.group_no_one" sequence="50"/>
+		        
+		<menuitem action="action_delivery_grid_form" id="menu_action_delivery_grid_form" 
+		 			parent="menu_delivery" sequence="10"/>
+		 
+		<menuitem action="action_delivery_carrier_form" id="menu_action_delivery_carrier_form" 
+		        	parent="menu_delivery" sequence="20"/>
+		        	
+    	<menuitem action="action_delivery_method_form" id="menu_action_delivery_method_form" 
+		        	parent="menu_delivery" sequence="30"/>
+    </data>
+</openerp>		        	
+        

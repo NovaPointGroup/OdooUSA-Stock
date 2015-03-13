@@ -1,0 +1,144 @@
+<openerp>
+    <data>
+   
+        <record id="view_picking_withcarrier_out_form" model="ir.ui.view">
+            <field name="name">delivery.stock.picking_withcarrier.out.form.view</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock.view_picking_form"/>
+            <field name="arch" type="xml">
+                <field name="min_date" position="after">
+                    <field name="delivery_method" attrs="{'invisible': [('picking_type_code', '=', 'incoming')]}" on_change="onchange_delivery_method(delivery_method)"/>
+                    <field name="sale_account_id" attrs="{'invisible': [('picking_type_code', '=', 'incoming')]}"/>
+                    <field name="carrier_id" attrs="{'invisible': ['|',('picking_type_code', '=', 'incoming'),('ship_company_code','!=','grid')]}" on_change="onchange_carrier_id(carrier_id)" />
+                    <field name="transport_id" attrs="{'invisible': [('picking_type_code', '=', 'incoming')]}" readonly='1'/>
+                    <field name="ship_company_code" invisible="1"/>
+                    <field name="carrier_tracking_ref" attrs="{'invisible': ['|',('picking_type_code', '=', 'incoming'),('ship_company_code','!=','grid')]}"/>
+                    <field name="number_of_packages" attrs="{'invisible': ['|',('picking_type_code', '=', 'incoming'),('ship_company_code','!=','grid')]}"/>
+                </field>
+                <field name="company_id" position="before">
+                    <field name="ship_service" attrs="{'invisible': [('picking_type_code', '=', 'incoming')]}"/>
+               </field>
+               <xpath expr="/form/header//button[@name='do_enter_transfer_details']" position="after">
+                    <button name="%(npg_report_shipping)d" attrs="{'invisible': ['|', ('picking_type_code', '=', 'incoming'), ('state', 'not in', ('assigned','confirmed'),)]}" string="Print Delivery Order" type="action"/>
+                    <button name="%(npg_report_shipping)d" attrs="{'invisible': ['|', ('picking_type_code', '=', 'incoming'), ('state', '!=', 'done')]}" string="Print Delivery Order"  type="action" class="oe_highlight"/>
+                </xpath>
+            </field>
+        </record>
+        
+        <!-- Tree -->
+		<record id="view_picking_out_tree_inherit" model="ir.ui.view">
+			<field name="name">stock.picking.tree.inherit</field>
+			<field name="model">stock.picking</field>
+			<field name="inherit_id" ref="stock.vpicktree"/>
+			<field name="arch" type="xml">
+				<xpath expr="//field[@name='backorder_id']" position="before">
+					<field name="ship_service"  />
+				</xpath>
+			</field>
+		</record>
+        
+        <record id="view_picking_withweight_internal_form" model="ir.ui.view">
+            <field name="name">stock.picking_withweight.internal.form.view</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock.view_picking_form"/>
+            <field name="arch" type="xml">
+                <field name="company_id" position="before">
+                    <label for="weight" string="Weight" attrs="{'invisible': ['|',('picking_type_code', '=', 'incoming'),('ship_company_code','!=','grid')]}"/>
+                    <div>
+                        <field name="weight" class="oe_inline"/>
+                        <field name="weight_uom_id" nolabel="1" attrs="{'invisible': ['|',('picking_type_code', '=', 'incoming'),('ship_company_code','!=','grid')]}" class="oe_inline"/>
+                    </div>
+                     <field name="weight_net" attrs="{'invisible': ['|',('picking_type_code', '=', 'incoming'),('ship_company_code','!=','grid')]}"  groups="base.group_no_one" class="oe_inline"/>
+                </field>
+            </field>
+        </record>
+
+        <record id="action_picking_tree4" model="ir.actions.act_window">
+            <field name="name">Picking to be invoiced</field>
+            <field name="res_model">stock.picking</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('invoice_state','=','2binvoiced'),('state','=','done'),('picking_type_code','=','outgoing')]</field>
+            <field name="filter" eval="True"/>
+            <field name="context">{'default_invoice_state': '2binvoiced','default_picking_type_code': 'outgoing','contact_display': 'partner'}</field>
+            <field name="search_view_id" ref="stock.view_picking_internal_search"/>
+        </record>
+
+        <record id="view_picking_withweight_internal_move_form" model="ir.ui.view">
+            <field name="name">stock.picking_withweight.internal.move.form.view</field>
+            <field name="model">stock.move</field>
+            <field name="inherit_id" ref="stock.view_move_picking_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='date_expected']" position="after">
+                    <field name="weight"/>
+                    <field name="weight_net" groups="base.group_no_one"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="view_move_withweight_form" model="ir.ui.view">
+            <field name="name">stock.move.form.weight</field>
+            <field name="model">stock.move</field>
+            <field name="inherit_id" ref="stock.view_move_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group[@name='main_grp']" position="inside">
+                    <label for="weight" string="Weight"/>
+                    <div>
+                        <field name="weight" class="oe_inline"/>
+                        <field name="weight_uom_id" nolabel="1" class="oe_inline"/>
+                    </div>
+                    <field name="weight_net" groups="base.group_no_one" class="oe_inline"/>
+                </xpath>
+                <xpath expr="//field[@name='picking_id']" position="after">
+					<group colspan="2" col="2" >
+						<separator string="Shipping" colspan="4" />
+						<field name="ship_service" readonly="1"/>
+					</group>
+				</xpath>
+            </field>
+        </record>
+        <!-- Search -->
+		<record id="view_picking_internal_search_inherit" model="ir.ui.view">
+			<field name="name">stock.picking.internal.search.inherit</field>
+			<field name="model">stock.picking</field>
+			<field name="inherit_id" ref="stock.view_picking_internal_search"/>
+			<field name="arch" type="xml">
+				<xpath expr="//filter[@string='Picking Type']" position="after">
+					<separator orientation="vertical" />
+					<filter string="Shipping Service" icon="terp-product" domain="[]" context="{'group_by':'ship_service'}"  
+							groups="base.group_extended"/>
+				</xpath>
+			</field>
+		</record>
+
+		<!-- Deliver Products Tree-->
+		<record id="view_move_tree_reception_picking_inherit" model="ir.ui.view">
+			<field name="name">stock.move.tree2.inherit</field>
+			<field name="model">stock.move</field>
+			<field name="inherit_id" ref="stock.view_move_tree_receipt_picking"/>
+			<field name="priority" eval="6" />
+			<field name="arch" type="xml">
+				<xpath expr="//field[@name='date']" position="after">
+					<field name="ship_service"/>
+				</xpath>
+			</field>
+		</record>
+        
+        <!-- Search -->
+		<record id="view_move_search_reception_outcoming_picking_inherit" model="ir.ui.view">
+			<field name="name">stock.move.outgoing.search2.inherit1</field>
+			<field name="model">stock.move</field>
+			<field name="inherit_id" ref="stock.view_move_search"/>
+			<field eval="8" name="priority"/>
+			<field name="arch" type="xml">
+				<xpath expr="//filter[@string='Scheduled']" position="after">
+					<separator orientation="vertical" />
+					<filter string="Shipping Service" icon="terp-product" domain="[]" context="{'group_by':'ship_service'}"  
+							groups="base.group_extended"/>
+				</xpath>
+			</field>
+		</record>
+        
+     </data>
+ </openerp>

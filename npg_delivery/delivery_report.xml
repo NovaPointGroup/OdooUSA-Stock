@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <report
+            id="npg_report_shipping"
+            model="stock.picking"
+            name="sale.shipping.npg"
+            multi="True"
+            rml="npg_delivery/report/npg_shipping.rml"
+            string="Delivery order"/>
+
+    </data>
+</openerp>

@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+	<data>
+		
+		<!-- Delivery Order Form View -->
+	 	<record id="view_picking_shipping_inherit" model="ir.ui.view">
+			<field name="name">stock.picking.shipping.inherit.out</field>
+			<field name="model">stock.picking</field>
+			<field name="inherit_id" ref="stock.view_picking_form" />
+			<field name="arch" type="xml">
+				<field name="move_lines" position="replace">
+					<field name="move_lines" context="{'address_out_id': partner_id, 'picking_type_code': 'outgoing', 'form_view_ref':'view_stock_move_shipping_inherit', 'tree_view_ref':'stock_move_tree_inherit_stock_move'}" options='{"reload_on_button": true}'>
+						<tree colors="grey:state == 'cancel'" string="Moves" editable="bottom" >
+		                    <field name="product_id" />
+		                    <field name="product_qty"  />
+		                    <field name="product_uos" invisible="1" />
+		                    <field name="package_id"  on_change="onchange_quantity(product_id, product_qty, product_uom, product_uos, location_id, False)" />
+		                    <field name="cost" invisible="1" />
+		                    <field name="product_uom"  string="Unit of Measure" groups="product.group_uom"/>
+		                   <field name="restrict_lot_id"   groups="stock.group_production_lot"/> 
+		                    <!-- <field name="tracking_id" invisible="1" groups="stock.group_tracking_lot"/>
+		                     <field name="sale_line_id" invisible="1" /> -->
+		                    <field name="product_packaging" invisible="1"  domain="[('product_id','=',product_id)]" groups="product.group_stock_packaging"/>
+		                    <field name="picking_id" invisible="1"/>
+		                    <field name="location_id" groups="stock.group_locations"/>
+		                    <field name="location_dest_id" groups="stock.group_locations"/>
+		                    <field name="create_date" invisible="1" groups="base.group_no_one"/>
+		                    <field name="date" string="Date" invisible="1" groups="base.group_no_one"/>
+		                    <field name="date_expected"  string="Date Expected"/>
+		                    <field name="state"/>
+		                </tree>
+					</field>			
+			  </field>
+				
+				<xpath expr="//field[@name='partner_id']" position="replace">
+					<field name="partner_id"   context="{'contact_display':'partner'}" colspan="2"/>
+				</xpath>
+				<xpath expr="//field[@name='delivery_method']" position="replace"/>
+				<xpath expr="//field[@name='sale_account_id']" position="replace"/>
+				<xpath expr="//field[@name='carrier_id']" position="replace"/>
+				<xpath expr="//field[@name='transport_id']" position="replace"/>
+				<xpath expr="//field[@name='carrier_tracking_ref']" position="replace"/>
+				<xpath expr="//field[@name='number_of_packages']" position="replace"/>
+				
+				<xpath expr="//page[@string='Additional Info']" position="after">
+					<page string="Shipping" attrs="{'invisible': ['|',('state','in',['draft', 'cancel']),('picking_type_code', '=', 'incoming')]}">
+						<group col="4">
+						    <field name="delivery_method" attrs="{'invisible': [('picking_type_code', '=', 'incoming')]}" on_change="onchange_delivery_method(delivery_method)"/>
+						    <field name="sale_account_id" attrs="{'invisible': [('picking_type_code', '=', 'incoming')]}"/>
+		                    <field name="carrier_id" attrs="{'invisible': ['|',('picking_type_code', '=', 'incoming'),('ship_company_code','!=','grid')]}" on_change="onchange_carrier_id(carrier_id)" />
+		                    <field name="transport_id" attrs="{'invisible': [('picking_type_code', '=', 'incoming')]}" readonly='1'/>
+		                    <field name="carrier_tracking_ref" attrs="{'invisible': ['|',('picking_type_code', '=', 'incoming'),('ship_company_code','!=','grid')]}"/>
+		                    <field name="number_of_packages" attrs="{'invisible': ['|',('picking_type_code', '=', 'incoming'),('ship_company_code','!=','grid')]}"/>
+							<field name="logis_company" invisible="1" on_change="onchange_logis_company(logis_company)"  />
+						</group>
+						<newline/>
+						<notebook>
+							<page string="Shipment" attrs="{'invisible': ['|',('picking_type_code', '=', 'incoming'),('ship_company_code','!=','ups')]}">
+							  <group colspan="4" col="6">
+							    <group colspan="1" col="4">
+									<field name='address_validate'/>
+									<field name='tot_ship_weight'  />
+									<field name='tot_del_order_weight' readonly="1" />
+									<field name='shipcharge'/>
+									<field name='ship_from' />
+								</group>
+								
+								<newline />
+								<group colspan="4" col="6" attrs="{'invisible':[('ship_from','=',False)]}">
+									<field name='ship_from_tax_id_no' />
+									<field name='ship_from_address' />
+								</group>
+								
+								<newline />
+							    <group  colspan="1" col="8">
+									<field name='freight' string="Freight" />
+									<field name='sat_delivery' />
+									<field name='with_ret_service' />
+									
+								</group>
+								
+							  </group>
+							</page>
+							<page string="Documents" attrs="{'invisible': ['|',('picking_type_code', '=', 'incoming'),('ship_company_code','!=','ups')]}">
+								<group colspan="4" col="8" invisible="0">
+									<field name='comm_inv' />
+									<field name='cer_orig' />
+									<field name='nafta_cer_orig' />
+								</group>
+							</page>
+
+						<page string="Producer Details" attrs="{'invisible':[('nafta_cer_orig','=',False)]}" >
+						<group colspan="4" col="4" attrs="{'invisible':[('nafta_cer_orig','=',False)]}">
+							<field name='prod_option' attrs="{'required':[('nafta_cer_orig','=',True),('prod_company','=',False)]}"/>
+							<field name='prod_company' attrs="{'required':[('nafta_cer_orig','=',True),('prod_option','=',False)]}"/>
+							<field name='prod_tax_id_no' attrs="{'required':[('nafta_cer_orig','=',True),('prod_option','=',False)]}"/>
+							<field name='prod_address_id' attrs="{'required':[('nafta_cer_orig','=',True),('prod_option','=',False)]}"/>
+						</group>
+						</page>
+						<page string="Sold To Details" attrs="{'invisible':[('comm_inv','=',False),('nafta_cer_orig','=',False)]}" >
+						<group colspan="4" col="4" attrs="{'invisible':[('comm_inv','=',False),('nafta_cer_orig','=',False)]}">
+							<field name='inv_option' attrs="{'required':['|', ('comm_inv','=',True),('nafta_cer_orig','=',True),
+  							('inv_att_name','=',False),
+ 							('inv_company','=',False), 
+ 							('inv_tax_id_no','=',False), 
+ 							('inv_address_id','=',False)]}"/>
+							<field name='inv_att_name' attrs="{'required':['|', ('comm_inv','=',True),('nafta_cer_orig','=',True),('inv_option','=',False)]}"/>
+							<field name='comm_code' attrs="{'required':['|', ('comm_inv','=',True),('nafta_cer_orig','=',True)]}"/>
+							<newline />
+							<field name='inv_company' attrs="{'required':['|', ('comm_inv','=',True),('nafta_cer_orig','=',True),('inv_option','=',False)]}"/>
+							<field name='inv_tax_id_no' attrs="{'required':['|', ('comm_inv','=',True),('nafta_cer_orig','=',True),('inv_option','=',False)]}"/>
+							<field name='inv_address_id' attrs="{'required':['|', ('comm_inv','=',True),('nafta_cer_orig','=',True),('inv_option','=',False)]}"/>
+							<field name='exp_carrier' attrs="{'required':['|', ('comm_inv','=',True),('nafta_cer_orig','=',True)]}" />
+						</group>
+						</page>
+						<page string="BlanketPeriod" attrs="{'invisible':[('nafta_cer_orig','=',False)]}" >
+						<group colspan="1" col="8" attrs="{'invisible':[('nafta_cer_orig','=',False)]}">
+							<field name='blanket_begin_date' attrs="{'required':[('nafta_cer_orig','=',True)]}"/>
+							<field name='blanket_end_date'  attrs="{'required':[('nafta_cer_orig','=',True)]}"/>
+						</group>
+						</page>
+						<page string="Packages" attrs="{'invisible': ['|',('picking_type_code', '=', 'incoming'),('ship_company_code','!=','ups')]}">
+						<group colspan="8" col="8">
+							<field name='packages_ids' nolabel="1" colspan="2" height="50" context="{'default_weight':False,'default_packge_no':False,'ssss':active_id}">
+								<tree string='Shipping Packages'>
+									<field name='packge_no' on_change="onchange_packge_no(parent.packages_ids,packge_no)"/>
+									<field name='weight' on_change="onchange_weight(parent.packages_ids, parent.tot_del_order_weight, weight)"/>
+									<field name='package_type' required='1' on_change="onchange_stock_package(package_type)"/>
+									<field name='length'/>
+									<field name='width'/>
+									<field name='height'/>
+									<field name='decl_val' />
+									<field name='show_button' invisible="1"/>
+									<field name='negotiated_rates' readonly="1"/>
+									<field name='tracking_no' readonly="1"/>
+									<button string="Print Label" name="print_label" icon='STOCK_PRINT' type="object" attrs="{'invisible':[('show_button','=', False)]}"
+										help='This prints a specific label for the package. This button also allows for reprinting a button.
+				 						The label is stored in the document management system as a pdf.'/>
+				                </tree> 
+								<form string='Shipping Packages' version="7.0">
+									<sheet>
+										<group colspan="4" col="4">
+											<group colspan="2" col="2">
+											    <field name='id' invisible="1"/>
+												<field name='packge_no' on_change="onchange_packge_no(packge_no, parent.packages_ids)"/>
+												<field name='package_type' required='1' widget="selection" on_change="onchange_stock_package(package_type)"/>
+												<field name='weight' on_change="onchange_weight(parent.packages_ids,parent.tot_del_order_weight, weight)"/>
+												<field name='length'/>
+												<field name='width'/>
+												<field name='height'/>
+												<field name='show_button' invisible="1"/>
+											</group>
+											<group colspan="2" col="2">
+												<field name='description'/>
+												<field name='decl_val' invisible="1"/>
+												<field name='ref2'/>
+												<field name='ref2_number'/>
+												<group colspan="4" col="6">
+												<button string="Weight" name='' help='Click this button to weigh the package from the scale.' colspan="1"/>
+												<button string="Print Label" name="print_label" type="object" colspan="1" attrs="{'invisible':[('show_button','=', False)]}"  
+														help='This prints a specific label for the package. This button also allows for reprinting a button. The label is stored in the document management system as a pdf.'/>
+												<button attrs="{'invisible':[('show_button','=', False)]}" string="Print Packing Slip" type="object" name="print_packing_slips" colspan="1"/>
+												</group>
+											</group>
+										</group>
+										<newline/>
+										<notebook colspan="4">
+											<page string="Items" >
+												<field name='stock_move_ids' nolabel='1' colspan="4" attrs="{'readonly':[('id','=',False)]}">
+						                       </field>
+											</page>
+											<page string="Result">
+												<group string="Shipping Results Details">
+													<field name='negotiated_rates' readonly="1"/>
+				 									<field name='shipment_identific_no' readonly="1"/> 
+				 									<field name='tracking_no' readonly="1"/> 
+													<field name='tracking_url' readonly="1" widget="url"/>
+													<field name='logo' widget="image" readonly="1"/>
+												</group>
+												<newline/>
+												<group string="Shipment Status">
+													<field name='ship_message' nolabel='1' colspan="4"/>
+												</group>
+											</page>
+										</notebook>
+									</sheet>
+								</form>
+							</field>	
+						</group>
+						</page>
+						</notebook>
+						<newline/>
+						<group colspan="2" col="8" attrs="{'invisible': ['|',('picking_type_code', '=', 'incoming'),('ship_company_code','!=','ups')]}" >
+							<field name='ship_state' />
+							<button string="Distribute Weight" type="object" name="distribute_weight"  icon="gtk-edit"
+								attrs="{'invisible':['|',('ship_state','in',['ready_pick','in_process','cancelled','shipped','delivered']),('state','!=','done')]}"  colspan="1"/>
+							<button string="Process Shipment"
+								help='This communicates with the Logistics company (e.g. UPS) and returns shipping information and labels.'
+								type="object" name="process_ship"  icon="gtk-execute"
+								attrs="{'invisible':[('ship_state','in',['ready_pick','in_process','cancelled','shipped','delivered'])]}"  colspan="1"/>
+
+							<button attrs="{'invisible': [('ship_state', 'in', ['read_pick','shipped','delivered', 'draft', 'cancelled'])]}" string="Print Labels" type="object" name="print_labels" icon="gtk-print" colspan="1"/>
+
+							<button string="Print Packing Slips" type="object" name="print_packing_slips" icon="gtk-print" colspan="1"/>
+
+							<button  icon="gtk-cancel" string="Cancel" help='This communicates with the Logistics company (e.g. UPS) and performs the void operations.' type="object" name="process_void" attrs="{'invisible':[('ship_state','not in',['ready_pick','in_process'])]}" confirm="Are you sure you want to cancel this shipment?"/>
+
+							<button string="Cancel" type="Cancel" name="cancel_ship" icon="gtk-cancel"
+								attrs="{'invisible':[('ship_state','in',['ready_pick','in_process','cancelled','shipped','delivered'])]}" colspan="1"/>
+						</group>
+						<newline/>
+						<group colspan="2" col="8">
+							<field name='ship_message' nolabel="1" readonly="1" height="50"/>
+							<newline />
+							<separator string="Trade Mark" colspan="8"  attrs="{'invisible': ['|',('picking_type_code', '=', 'incoming'),('ship_company_code','!=','ups')]}"/>
+							<newline />
+							<field name='trade_mark' colspan="8" nolabel="1" readonly="1"/>
+						</group>
+						</page>
+				</xpath>
+			</field>
+		</record>  
+		
+
+     	<record id="view_stock_move_shipping_inherit" model="ir.ui.view">
+			<field name='name'>stock.move.shipping.inherit</field>
+			<field name="model">stock.move</field>
+			<field name="inherit_id" ref="stock.view_move_picking_form"/>
+            <field name="arch" type="xml">
+				<field name="product_id" position="after">
+					    <!--<field name="sale_line_id" />-->
+						<field name="package_id" class="oe_inline"  on_change="onchange_quantity(product_id, product_qty, product_uom, product_uos, location_id, False)"/> 
+					    <field name="product_qty" class="oe_inline"  on_change="onchange_quantity(product_id, product_qty, product_uom, product_uos, location_id, False)"/> 		
+						<field name="cost" />
+				</field>
+            <field name="product_id" position="attributes">
+                     <attribute name="context">{'move_type':parent.get('type','package'), 'move_ids':parent.id}</attribute>  
+            </field>
+           </field>
+		</record>
+
+	</data>
+</openerp>
