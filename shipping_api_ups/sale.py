@@ -60,13 +60,14 @@ class sale_order(osv.osv):
                             'shipcharge':sale.shipcharge or False,
                             'packages_ids': [(0,0, {
                                                     'package_type':sale.ups_packaging_type and sale.ups_packaging_type.id or False,
+                                                    'weight':sale.total_weight_net or False,
                                                     
                                                     
                                                     })]
                             }
                         pick_obj.write(cr, uid, pick_ids, vals)
                 else:
-                    pick_ids = pick_obj.search(cr, uid, [('sale_id', '=', sale.id), ('type', '=', 'out')])
+                    pick_ids = pick_obj.search(cr, uid, [('sale_id', '=', sale.id), ('picking_type_code', '=', 'outgoing')])
                     if pick_ids:
                         pick_obj.write(cr, uid, pick_ids, {'shipper': False, 'ups_service': False}, context=context)
         return result

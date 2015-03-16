@@ -1176,7 +1176,7 @@ class stock_picking(osv.osv):
         ship_move_ids = {}
         do_transaction = True
         response_dic = {}
-        if not (deliv_order.logis_company or deliv_order.shipper or deliv_order.ups_service):
+        if not (deliv_order.delivery_method or deliv_order.shipper or deliv_order.ups_service):
             raise osv.except_osv("Warning", "Please select Logistics Company, Shipper and Shipping Service")
         if not deliv_order.packages_ids:
             raise osv.except_osv("Warning", "Please add shipping packages before doing Process Shipping.")
@@ -1204,13 +1204,13 @@ class stock_picking(osv.osv):
                 ship_confirm_request_xml = self.create_ship_confirm_request_new(cr, uid, deliv_order, lines)
                 ship_confirm_web = ''
                 ship_confirm_port = ''
-                if deliv_order.logis_company:
-                    if deliv_order.logis_company.test_mode:
-                        ship_confirm_web = deliv_order.logis_company.ship_req_test_web
-                        ship_confirm_port = deliv_order.logis_company.ship_req_test_port
+                if deliv_order.delivery_method:
+                    if deliv_order.delivery_method.test_mode:
+                        ship_confirm_web = deliv_order.delivery_method.ship_req_test_web
+                        ship_confirm_port = deliv_order.delivery_method.ship_req_test_port
                     else:
-                        ship_confirm_web = deliv_order.logis_company.ship_req_web
-                        ship_confirm_port = deliv_order.logis_company.ship_req_port
+                        ship_confirm_web = deliv_order.delivery_method.ship_req_web
+                        ship_confirm_port = deliv_order.delivery_method.ship_req_port
                     if ship_confirm_web:
                         parse_url = urlparse(ship_confirm_web)
                         serv = parse_url.netloc
@@ -1222,6 +1222,7 @@ class stock_picking(osv.osv):
                     """1.make and call function to send request/ 2.make function to process the response and write it """
                     res = conn.getresponse()
                     result = res.read()
+                    print"result",result
     #                 result[:result.find('PUBLIC')+ len('PUBLIC')]+''+result[result.find('PUBLIC')+ len('PUBLIC'):]
                     response_dic = xml2dic.main(result)
                     response = ''
